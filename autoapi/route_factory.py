@@ -25,7 +25,7 @@ class Routers:
         self, models, schemas, configs, get_db, get_current_user, user_schema
     ) -> None:
         self.router_names: set = set()
-        self.create_routers(
+        self.routers = self.create_routers(
             models, schemas, configs, get_db, get_current_user, user_schema
         )
 
@@ -59,6 +59,7 @@ class Routers:
             )
             setattr(self, model_name, created_router)
             self.router_names.add(model_name)
+        return self
 
     @staticmethod
     def router_creator(
