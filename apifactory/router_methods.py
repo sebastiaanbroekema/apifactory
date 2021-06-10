@@ -8,7 +8,7 @@ from typing import Any, Callable, List, Optional, Type
 from fastapi import Depends, Query, Request
 from sqlalchemy.orm import Session
 
-from autoapi.utils import (
+from apifactory.utils import (
     exclude_columns,
     not_found,
     param_invalid,

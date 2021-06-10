@@ -42,7 +42,7 @@ class Hash:
 
 
 class Security:
-    """Security Class for autoapi"""
+    """Security Class for apifactory"""
 
     def __init__(
         self,

@@ -6,14 +6,14 @@ from typing import Type
 
 from fastapi import APIRouter
 
-from autoapi.router_methods import (
+from apifactory.router_methods import (
     get_id_creator,
     getall_creator,
     put_creator,
     post_creator,
     delete_creator,
 )
-from autoapi.utils import (
+from apifactory.utils import (
     model_with_optional_fields,
 )
 

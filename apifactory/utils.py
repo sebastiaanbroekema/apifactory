@@ -1,4 +1,4 @@
-"""various util functions for autoapi
+"""various util functions for apifactory
 
 """
 # pylint: disable=E0611
