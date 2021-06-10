@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "apifactory"
+version = "0.1.0"
+description = "package for automatically creating an api on an existing database"
+authors = ["Sebastiaan Broekema <sebastiaanbroekema@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi="^0.65.1"
+python-jose="^3.2.0"
+pymssql="^2.2.1"
+bcrypt="^3.2.0"
+passlib= "^1.7.4"
+sqlalchemy="^1.4.7"
+pydantic= "^1.8.2"
+uvicorn= "^0.13.4"
+python-multipart = "^0.0.5"
+
+[tool.poetry.dev-dependencies]
+black = "^21.5b2 "
+commitizen = "^2.17.6"
+pylint = "^2.8.3"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
