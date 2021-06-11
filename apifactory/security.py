@@ -31,14 +31,34 @@ class TokenData(BaseModel):
 
 
 class Hash:
-    def __init__(self, schemes=("bcrypt")) -> None:
+    """class for hashing of paswords
+    contains option for having a salt
+    as a seperate secret
+    """
+
+    def __init__(self, schemes=("bcrypt"), salt=None) -> None:
+        if not salt:
+            salt = ""
+        self.salt = salt
         self.pwd_cxt = CryptContext(schemes=schemes, deprecated="auto")
 
     def bcrypt(self, password: str):
-        return self.pwd_cxt.hash(password)
+        """does this work?
+
+        Parameters
+        ----------
+        password : str
+            [description]
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
+        return self.pwd_cxt.hash(f"{self.salt}{password}")
 
     def verify(self, plain_password, hashed_password):
-        return self.pwd_cxt.verify(plain_password, hashed_password)
+        return self.pwd_cxt.verify(f"{self.salt}{plain_password}", hashed_password)
 
 
 class Security:
@@ -52,12 +72,13 @@ class Security:
         algorithm="HS256",
         access_token_expire_minutes=30,
         login_route="login",
+        passward_salt=None,
     ) -> None:
 
         self.secret_key = key
         self.algorithm = algorithm
         self.access_token_expire_minutes = access_token_expire_minutes
-        self.hash = Hash()
+        self.hash = Hash(salt=passward_salt)
         self.login = self.login_router(usermodel=usermodel, get_db=get_db)
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=login_route)
         self.get_current_user = self.current_user_factory()
