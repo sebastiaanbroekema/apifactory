@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "package for automatically creating an api on an existing database"
 authors = ["Sebastiaan Broekema <sebastiaanbroekema@gmail.com>"]
 license = "MIT"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
