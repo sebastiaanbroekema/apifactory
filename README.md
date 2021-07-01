@@ -1,3 +1,7 @@
+[![Downloads](https://pepy.tech/badge/apifactory/month)](https://pepy.tech/project/apifactory)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![](https://img.shields.io/pypi/pyversions/apifactory)
+
 # Apifactory
 
 Apifacotry allows you to create APIs on existing (currently only SQL) databases nearly automatically. It handles all sorts of setup automatically for you, including creating pydantic data schemas setting up login and JWT. 
