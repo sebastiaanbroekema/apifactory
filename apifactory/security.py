@@ -68,14 +68,14 @@ class Security:
         self,
         usermodel,
         get_db,
-        key,
+        jwt_key,
         algorithm="HS256",
         access_token_expire_minutes=30,
         login_route="login",
         passward_salt=None,
     ) -> None:
 
-        self.secret_key = key
+        self.secret_key = jwt_key
         self.algorithm = algorithm
         self.access_token_expire_minutes = access_token_expire_minutes
         self.hash = Hash(salt=passward_salt)

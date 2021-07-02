@@ -18,12 +18,12 @@ from apifactory.schemas import Schemas
 class ApiFactory:
     """[summary]"""
 
-    def __init__(self, database_url, usermodel_name, key, config):
+    def __init__(self, database_url, usermodel_name, jwt_key, config):
         self.db = Database(database_url)
         self.schemas = Schemas(self.db.models)
         usermodel = getattr(self.db.models, usermodel_name)
         userschema = getattr(self.schemas, usermodel_name)
-        self.security = Security(usermodel, self.db.get_db, key)
+        self.security = Security(usermodel, self.db.get_db, jwt_key)
         self.routers = Routers(
             self.db.models,
             self.schemas,
