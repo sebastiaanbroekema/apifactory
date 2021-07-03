@@ -1,12 +1,9 @@
 """for generating an entire app
 """
-# pylint: disable=E1101
-# from typing import List
 
 
+from yaml import load, Loader
 from fastapi import FastAPI
-
-# from fastapi.routing import APIRoute
 
 from apifactory.route_factory import Routers
 from apifactory.security import Security
@@ -47,3 +44,21 @@ class ApiFactory:
         return app
 
         # open_api = app.openapi()
+
+    @classmethod
+    def from_yaml(cls, yaml_file: str):
+        """[summary]
+
+        Parameters
+        ----------
+        yaml_file : str
+            [description]
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
+        with open(yaml_file) as config:
+            app_config = load(config, Loader)
+        return cls(**app_config)
