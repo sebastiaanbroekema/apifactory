@@ -1,7 +1,7 @@
 """for generating an entire app
 """
 
-
+from json import load as jsonload
 from yaml import load, Loader
 from fastapi import FastAPI
 
@@ -61,4 +61,22 @@ class ApiFactory:
         """
         with open(yaml_file) as config:
             app_config = load(config, Loader)
+        return cls(**app_config)
+
+    @classmethod
+    def from_json(cls, json_file: str):
+        """[summary]
+
+        Parameters
+        ----------
+        json_file : str
+            [description]
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
+        with open(json_file) as config:
+            app_config = jsonload(config)
         return cls(**app_config)
