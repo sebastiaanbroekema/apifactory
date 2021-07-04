@@ -1,6 +1,6 @@
 """tests for app_factory module
 
-currenlty only tests alternative constructor method
+currenlty only tests alternative constructor methods
 """
 import os
 from apifactory.app_factory import ApiFactory

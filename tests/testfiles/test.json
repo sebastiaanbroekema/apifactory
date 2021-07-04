@@ -1,0 +1,22 @@
+{
+  "config": {
+    "Persons": {
+      "excluded_columns_post": [
+        "Personid",
+        "createdDate"
+      ],
+      "excluded_columns_put": [
+        "Personid",
+        "createdDate"
+      ]
+    },
+    "test_table": {
+      "excluded_columns_put": [
+        "primarykey"
+      ]
+    }
+  },
+  "database_url": "sqlite:///tests/testdb/test.db",
+  "jwt_key": "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7",
+  "usermodel_name": "Users"
+}
