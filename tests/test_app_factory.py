@@ -1,8 +1,11 @@
 """tests for app_factory module
 
-currenlty only tests alternative constructor methods
+currenlty tests:
+alternative constructor methods
+proper initialisation
 """
 import os
+from fastapi import FastAPI
 from apifactory.app_factory import ApiFactory
 
 
@@ -17,3 +20,9 @@ def test_yaml():
 def test_json():
     file_name = os.path.join(BASE_PATH, "testfiles/test.json")
     assert ApiFactory.from_json(file_name)
+
+
+def test_app_creation():
+    file_name = os.path.join(BASE_PATH, "testfiles/test.yaml")
+    app = ApiFactory.from_yaml(file_name).app_factory()
+    assert isinstance(app, FastAPI)
