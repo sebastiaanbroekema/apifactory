@@ -101,6 +101,7 @@ class Routers:
             model=model,
             schema=schema,
             get_db=get_db,
+            method_kwargs=modelconfig.get("get_kwargs", {}),
             get_current_user=get_current_user,
             user_schema=user_schema,
         )
@@ -109,6 +110,7 @@ class Routers:
             model=model,
             schema=schema,
             get_db=get_db,
+            method_kwargs=modelconfig.get("get_id_kwargs", {}),
             get_current_user=get_current_user,
             user_schema=user_schema,
         )
@@ -118,6 +120,7 @@ class Routers:
             schema_opt,
             excluded_columns=modelconfig.get("excluded_columns_put", None),
             get_db=get_db,
+            method_kwargs=modelconfig.get("put_kwargs", {}),
             get_current_user=get_current_user,
             user_schema=user_schema,
         )
@@ -127,6 +130,7 @@ class Routers:
             schema_opt,
             excluded_columns=modelconfig.get("excluded_columns_post", None),
             get_db=get_db,
+            method_kwargs=modelconfig.get("post_kwargs", {}),
             get_current_user=get_current_user,
             user_schema=user_schema,
         )
@@ -134,6 +138,7 @@ class Routers:
             router_routes["delete"],
             model,
             get_db=get_db,
+            method_kwargs=modelconfig.get("delete_kwargs", {}),
             get_current_user=get_current_user,
             user_schema=user_schema,
         )

@@ -23,6 +23,7 @@ def getall_creator(
     get_db,
     get_current_user,
     user_schema,
+    method_kwargs: dict,
 ):
     """[summary]
 
@@ -41,10 +42,7 @@ def getall_creator(
         [description]
     """
     #  operation_id set for custom name instead of route in openapi
-    @method(
-        "/",
-        response_model=List[schema],
-    )
+    @method("/", response_model=List[schema], **method_kwargs)
     def get_all(
         request: Request,
         db: Session = Depends(get_db),
@@ -71,6 +69,7 @@ def get_id_creator(
     get_db,
     get_current_user,
     user_schema,
+    method_kwargs: dict,
     primary_key_type: Any = int,
 ):
     """[summary]
@@ -93,10 +92,7 @@ def get_id_creator(
     """
     key_name, column = primary_key_checker(model)
 
-    @method(
-        "/{key}",
-        response_model=schema,
-    )
+    @method("/{key}", response_model=schema, **method_kwargs)
     def get_id(
         key: primary_key_type,
         db: Session = Depends(get_db),
@@ -117,6 +113,7 @@ def put_creator(
     get_db,
     get_current_user,
     user_schema,
+    method_kwargs: dict,
     primary_key_type: Any = int,
     excluded_columns: Optional[List] = None,
 ):
@@ -144,7 +141,7 @@ def put_creator(
     key_name, column = primary_key_checker(model)
     # schema = model_with_optional_fields(schema)
 
-    @method("/{key}")
+    @method("/{key}", **method_kwargs)
     async def update(
         request: schema,
         key: primary_key_type,
@@ -172,6 +169,7 @@ def post_creator(
     get_db,
     get_current_user,
     user_schema,
+    method_kwargs: dict,
     excluded_columns: Optional[list] = None,
 ):
     """[summary]
@@ -193,7 +191,7 @@ def post_creator(
         [description]
     """
 
-    @method("/")
+    @method("/", **method_kwargs)
     def post(
         request: schema,
         db: Session = Depends(get_db),
@@ -217,6 +215,7 @@ def delete_creator(
     get_db,
     get_current_user,
     user_schema,
+    method_kwargs: dict,
     primary_key_type: Any = int,
 ):
     """[summary]
@@ -238,7 +237,7 @@ def delete_creator(
 
     key_name, column = primary_key_checker(model)
 
-    @method("/{key}")
+    @method("/{key}", **method_kwargs)
     def delete(
         key: primary_key_type,
         db: Session = Depends(get_db),
