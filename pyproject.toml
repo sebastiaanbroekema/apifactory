@@ -31,6 +31,7 @@ PyYAML = "^5.4.1"
 black = "^21.5b2 "
 commitizen = "^2.17.6"
 pylint = "^2.8.3"
+pytest-cov = "^2.12.1 "
 
 
 [build-system]

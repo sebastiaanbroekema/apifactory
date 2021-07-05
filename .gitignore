@@ -4,3 +4,6 @@ settings.json
 
 *.egg-info
 dist/
+
+.coverage
+cov_report/*
