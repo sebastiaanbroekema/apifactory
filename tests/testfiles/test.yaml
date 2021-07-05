@@ -12,3 +12,6 @@ config:
 database_url: sqlite:///tests/testdb/test.db
 jwt_key: 09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
 usermodel_name: Users
+engine_kwargs:
+  connect_args:
+    "check_same_thread": False
