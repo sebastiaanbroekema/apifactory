@@ -82,19 +82,3 @@ class Schemas:
             db_model.__name__, __config__=config, **fields  # type: ignore
         )
         return pydantic_model
-
-
-# tables = [
-#     getattr(Models, x)
-#     for x in dir(Models)
-#     if (type(getattr(Models, x)) == sqlalchemy.orm.decl_api.DeclarativeMeta)
-# ]
-
-
-# for table in tables:
-#     # disabled false positve pylint error
-#     # pylint: disable=C0103
-#     table_name = str(table.__table__.name)
-#     # pylint: enable=C0103
-#     schema = sqlalchemy_to_pydantic(table, config=OrmConfig)
-#     setattr(Schemas, table_name, schema)
