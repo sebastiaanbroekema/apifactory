@@ -15,8 +15,8 @@ from apifactory.schemas import Schemas
 class ApiFactory:
     """[summary]"""
 
-    def __init__(self, database_url, usermodel_name, jwt_key, config):
-        self.db = Database(database_url)
+    def __init__(self, database_url, usermodel_name, jwt_key, config, **kwargs):
+        self.db = Database(database_url, engine_kwargs=kwargs.get('engine_kwargs',None))
         self.schemas = Schemas(self.db.models)
         usermodel = getattr(self.db.models, usermodel_name)
         userschema = getattr(self.schemas, usermodel_name)
