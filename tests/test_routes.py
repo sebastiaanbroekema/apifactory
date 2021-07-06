@@ -74,12 +74,24 @@ def test_get_id():
 
 
 def test_post():
-    ...
+    data = {"primarykey": 2, "someothercoll": "test"}
+    response = client.post("test_table/", headers=header, json=data)
+    assert response.status_code == 200
+    # check if inserted in db
+    response = client.get("test_table/2", headers=header)
+    assert response.status_code == 200
 
 
 def test_put():
-    ...
+    data = {"primarykey": 2, "someothercoll": "someother"}
+    response = client.put("test_table/2", headers=header, json=data)
+    assert response.status_code == 200
+    response = client.get("test_table/2", headers=header)
+    assert response.json()["someothercoll"] == "someother"
 
 
 def test_delete():
-    ...
+    response = client.delete("test_table/2", headers=header)
+    assert response.status_code == 200
+    response = client.get("test_table/2", headers=header)
+    assert response.status_code == 404
