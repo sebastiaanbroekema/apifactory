@@ -32,4 +32,6 @@ jobs:
         POETRY_VIRTUALENVS_CREATE: false
     - name: Test with pytest
       run: |
-        pytest
+        pytest  --cov-report=xml
+    - name: Upload coverage
+      uses: codecov/codecov-action@v1
