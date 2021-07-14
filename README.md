@@ -1,6 +1,7 @@
 [![Downloads](https://pepy.tech/badge/apifactory/month)](https://pepy.tech/project/apifactory)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![](https://img.shields.io/pypi/pyversions/apifactory)
+[![codecov](https://codecov.io/gh/sebastiaanbroekema/apifactory/branch/develop/graph/badge.svg?token=28U38TJ6I8)](https://codecov.io/gh/sebastiaanbroekema/apifactory)
 
 # Apifactory
 
@@ -55,5 +56,7 @@ Features to be included in the future:
 * Support for views 
 * Add scopes to JWT
 * Configure from files YAML/JSON
-* Add support for custom classes inserted into ApiFactory* Make apifactory completely asynchronous
+* Add support for custom classes inserted into ApiFactory
+* Make apifactory completely asynchronous
 * docs
+* ratelimitting
