@@ -15,13 +15,26 @@ from apifactory.schemas import Schemas
 class ApiFactory:
     """[summary]"""
 
-    def __init__(self, database_url, usermodel_name, jwt_key, config, **kwargs):
-        self.db = Database(database_url, engine_kwargs=kwargs.get('engine_kwargs',None))
-        self.schemas = Schemas(self.db.models)
+    def __init__(
+        self,
+        database_url,
+        usermodel_name,
+        jwt_key,
+        config,
+        database=Database,
+        schemas=Schemas,
+        security=Security,
+        routers=Routers,
+        **kwargs
+    ):
+        self.db = database(
+            database_url, engine_kwargs=kwargs.get("engine_kwargs", None)
+        )
+        self.schemas = schemas(self.db.models)
         usermodel = getattr(self.db.models, usermodel_name)
         userschema = getattr(self.schemas, usermodel_name)
-        self.security = Security(usermodel, self.db.get_db, jwt_key)
-        self.routers = Routers(
+        self.security = security(usermodel, self.db.get_db, jwt_key)
+        self.routers = routers(
             self.db.models,
             self.schemas,
             config,
@@ -46,7 +59,7 @@ class ApiFactory:
         # open_api = app.openapi()
 
     @classmethod
-    def from_yaml(cls, yaml_file: str):
+    def from_yaml(cls, yaml_file: str, **kwargs):
         """[summary]
 
         Parameters
@@ -61,10 +74,11 @@ class ApiFactory:
         """
         with open(yaml_file) as config:
             app_config = load(config, Loader)
+        app_config = app_config | kwargs
         return cls(**app_config)
 
     @classmethod
-    def from_json(cls, json_file: str):
+    def from_json(cls, json_file: str, **kwargs):
         """[summary]
 
         Parameters
@@ -79,4 +93,5 @@ class ApiFactory:
         """
         with open(json_file) as config:
             app_config = jsonload(config)
+        app_config = app_config | kwargs
         return cls(**app_config)
