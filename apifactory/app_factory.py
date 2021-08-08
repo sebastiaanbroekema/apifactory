@@ -59,7 +59,7 @@ class ApiFactory:
         # open_api = app.openapi()
 
     @classmethod
-    def from_yaml(cls, yaml_file: str):
+    def from_yaml(cls, yaml_file: str, **kwargs):
         """[summary]
 
         Parameters
@@ -74,10 +74,11 @@ class ApiFactory:
         """
         with open(yaml_file) as config:
             app_config = load(config, Loader)
+        app_config = app_config | kwargs
         return cls(**app_config)
 
     @classmethod
-    def from_json(cls, json_file: str):
+    def from_json(cls, json_file: str, **kwargs):
         """[summary]
 
         Parameters
@@ -92,4 +93,5 @@ class ApiFactory:
         """
         with open(json_file) as config:
             app_config = jsonload(config)
+        app_config = app_config | kwargs
         return cls(**app_config)
