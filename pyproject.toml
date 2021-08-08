@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "apifactory"
-version = "0.2.1"
+version = "0.3.0"
 description = "package for automatically creating an api on an existing database"
 authors = ["Sebastiaan Broekema <sebastiaanbroekema@gmail.com>"]
 license = "MIT"
