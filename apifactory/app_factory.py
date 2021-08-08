@@ -15,13 +15,26 @@ from apifactory.schemas import Schemas
 class ApiFactory:
     """[summary]"""
 
-    def __init__(self, database_url, usermodel_name, jwt_key, config, **kwargs):
-        self.db = Database(database_url, engine_kwargs=kwargs.get('engine_kwargs',None))
-        self.schemas = Schemas(self.db.models)
+    def __init__(
+        self,
+        database_url,
+        usermodel_name,
+        jwt_key,
+        config,
+        database=Database,
+        schemas=Schemas,
+        security=Security,
+        routers=Routers,
+        **kwargs
+    ):
+        self.db = database(
+            database_url, engine_kwargs=kwargs.get("engine_kwargs", None)
+        )
+        self.schemas = schemas(self.db.models)
         usermodel = getattr(self.db.models, usermodel_name)
         userschema = getattr(self.schemas, usermodel_name)
-        self.security = Security(usermodel, self.db.get_db, jwt_key)
-        self.routers = Routers(
+        self.security = security(usermodel, self.db.get_db, jwt_key)
+        self.routers = routers(
             self.db.models,
             self.schemas,
             config,
