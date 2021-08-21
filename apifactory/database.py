@@ -12,9 +12,39 @@ this way you can fake a primary key without having one in the database.
 """
 
 from typing import Optional
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Column, Table, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
+
+
+class Models:
+    table_names: set = set()
+
+
+def add_to_metadata(name, primary_keys, metadata, engine):
+    """helper function for creating virtual primary keys for views.
+
+    Parameters
+    ----------
+    name : [type]
+        [description]
+    primary_keys : [type]
+        [description]
+    metadata : [type]
+        [description]
+    engine : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
+
+    columns = [Column(key[0], key[1], primary_key=True) for key in primary_keys]
+
+    created_table = Table(name, metadata, autoload=True, autoload_with=engine, *columns)
+    return created_table, metadata
 
 
 class Database:
@@ -27,6 +57,7 @@ class Database:
         database_url: str,
         engine_kwargs: Optional[dict] = None,
         local_session_kwargs: Optional[dict] = None,
+        views: Optional[dict] = None,
     ):
 
         if not engine_kwargs:
@@ -38,6 +69,7 @@ class Database:
                 autocommit=False,
                 autoflush=False,
             )
+        self.views = views
         self.local_session = sessionmaker(bind=self.engine, **local_session_kwargs)
         self.models = self.auto_create_models()
         ...
@@ -66,16 +98,19 @@ class Database:
             object containing all detected sql tables
         """
         # Session = sessionmaker(bind=engine)
-        class Models:
-            table_names: set = set()
-            """Class that will contain all table models"""
+        metadata = MetaData()
+        if self.views:
+            for key, value in self.views.items():
+                _, metadata = add_to_metadata(key, value, metadata, self.engine)
 
-        base = automap_base()
+        # base = automap_base()
+        # base.prepare(self.engine, reflect=True)
+        base = automap_base(metadata=metadata)
         base.prepare(self.engine, reflect=True)
-
+        models = Models()
         # pylint: disable=W0212
         # add all tables to the Models class
         for key, value in base.classes._data.items():
-            setattr(Models, key, value)
-            Models.table_names.add(key)
-        return Models
+            setattr(models, key, value)
+            models.table_names.add(key)
+        return models
