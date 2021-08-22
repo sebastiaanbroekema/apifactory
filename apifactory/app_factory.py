@@ -28,7 +28,9 @@ class ApiFactory:
         **kwargs
     ):
         self.db = database(
-            database_url, engine_kwargs=kwargs.get("engine_kwargs", None)
+            database_url,
+            engine_kwargs=kwargs.get("engine_kwargs", None),
+            views=config.get("views", None),
         )
         self.schemas = schemas(self.db.models)
         usermodel = getattr(self.db.models, usermodel_name)
