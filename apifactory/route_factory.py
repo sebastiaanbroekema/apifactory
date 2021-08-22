@@ -54,8 +54,9 @@ class Routers:
             config["route"] = f"/{model_name}"
             schema = getattr(schemas, model_name)
             model = getattr(models, model_name)
+            is_view = model_name in models.view_names
             created_router = self.router_creator(
-                model, schema, config, get_db, get_current_user, user_schema
+                model, schema, config, get_db, get_current_user, user_schema, is_view
             )
             setattr(self, model_name, created_router)
             self.router_names.add(model_name)
@@ -69,6 +70,7 @@ class Routers:
         get_db,
         get_current_user,
         user_schema,
+        is_view,
     ):
         """[summary]
 
@@ -96,6 +98,7 @@ class Routers:
             "delete": router.delete,
         }
         schema_opt = model_with_optional_fields(schema)
+
         getall_creator(
             method=router_routes["get"],
             model=model,
@@ -114,6 +117,8 @@ class Routers:
             get_current_user=get_current_user,
             user_schema=user_schema,
         )
+        if is_view:
+            return router
         put_creator(
             router_routes["put"],
             model,
