@@ -12,13 +12,26 @@ this way you can fake a primary key without having one in the database.
 """
 
 from typing import Optional
-from sqlalchemy import create_engine, Column, Table, MetaData
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Table,
+    MetaData,
+    VARCHAR,
+    NCHAR,
+    INTEGER,
+    NVARCHAR,
+)
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
 
 
 class Models:
     table_names: set = set()
+    view_names: set = set()
+
+
+DTYPES = {"VARCHAR": VARCHAR, "NCHAR": NCHAR, "INTEGER": INTEGER, "NVARCHAR": NVARCHAR}
 
 
 def add_to_metadata(name, primary_keys, metadata, engine):
@@ -40,8 +53,10 @@ def add_to_metadata(name, primary_keys, metadata, engine):
     [type]
         [description]
     """
-
-    columns = [Column(key[0], key[1], primary_key=True) for key in primary_keys]
+    columns = [
+        Column(key[0], DTYPES.get(key[1], key[1]), primary_key=True)
+        for key in primary_keys
+    ]
 
     created_table = Table(name, metadata, autoload=True, autoload_with=engine, *columns)
     return created_table, metadata
@@ -98,16 +113,17 @@ class Database:
             object containing all detected sql tables
         """
         # Session = sessionmaker(bind=engine)
+        models = Models()
         metadata = MetaData()
         if self.views:
-            for key, value in self.views.items():
-                _, metadata = add_to_metadata(key, value, metadata, self.engine)
+            # create view instances in metadata object
+            for view, primarykeys in self.views.items():
+                _, metadata = add_to_metadata(view, primarykeys, metadata, self.engine)
+                models.view_names.add(view)
 
-        # base = automap_base()
-        # base.prepare(self.engine, reflect=True)
+        # use metadata to include created views / multicolumn primary keys
         base = automap_base(metadata=metadata)
         base.prepare(self.engine, reflect=True)
-        models = Models()
         # pylint: disable=W0212
         # add all tables to the Models class
         for key, value in base.classes._data.items():
