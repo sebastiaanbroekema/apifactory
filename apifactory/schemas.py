@@ -76,7 +76,7 @@ class Schemas:
                     assert python_type, f"Could not infer python_type for {column}"
                     default = None
                     if column.default is None and not column.nullable:
-                        default = ...
+                        default = None
                     fields[name] = (python_type, default)
         pydantic_model = create_model(
             db_model.__name__, __config__=config, **fields  # type: ignore
