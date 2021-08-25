@@ -5,7 +5,7 @@
 from typing import Type
 from fastapi import HTTPException, status
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 
 class PrimaryKeyAmountError(Exception):
@@ -37,28 +37,6 @@ def param_invalid(model: str, parameter: str):
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=f"model: {model.__name__} does not accept parameter {parameter}",
     )
-
-
-def schema_error(schema, reponse_dict):
-    """[summary]
-
-    Parameters
-    ----------
-    schema : [type]
-        [description]
-    reponse_dict : [type]
-        [description]
-
-    Raises
-    ------
-    ValidationError
-        [description]
-    """
-    try:
-        schema(**reponse_dict)
-        print(dir(schema))
-    except ValidationError as error:
-        raise ValidationError from error
 
 
 def primary_key_checker(model: Type):
@@ -116,10 +94,3 @@ def add_routes(routers, app):
     for router_name in routers.router_names:
         app.include_router(getattr(routers, router_name))
     return app
-
-
-def open_api_alter(open_api):
-    for schema in list(open_api["components"]["schemas"].keys()):
-        if "Optional" in schema:
-            open_api["components"]["schemas"].pop(schema)
-    return open_api
