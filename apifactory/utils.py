@@ -96,7 +96,7 @@ def model_with_optional_fields(model: Type[BaseModel]) -> Type[BaseModel]:
     """
 
     class OptionalModel(model):
-        ...
+        """Class to contain optional version for all fields in model"""
 
     for field in OptionalModel.__fields__.values():
         field.required = False

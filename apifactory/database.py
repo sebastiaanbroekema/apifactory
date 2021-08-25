@@ -87,7 +87,6 @@ class Database:
         self.views = views
         self.local_session = sessionmaker(bind=self.engine, **local_session_kwargs)
         self.models = self.auto_create_models()
-        ...
 
     def get_db(self):
         """simple helper generator for handeling local sessions.
