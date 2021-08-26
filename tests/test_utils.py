@@ -11,6 +11,7 @@ from apifactory.utils import PrimaryKeyAmountError, primary_key_checker
 def test_primarykeyerror():
     with pytest.raises(PrimaryKeyAmountError):
         raise PrimaryKeyAmountError
+    assert str(PrimaryKeyAmountError)
 
 
 def test_primary_key_checker():
