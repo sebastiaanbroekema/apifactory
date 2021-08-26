@@ -3,7 +3,7 @@
 
 import os
 from fastapi.testclient import TestClient
-
+import pytest
 
 from apifactory.app_factory import ApiFactory
 
@@ -16,34 +16,32 @@ app = ApiFactory.from_yaml(file_name).app_factory()
 
 client = TestClient(app)
 
+HEADER = {
+    "accept": "application/json",
+    "Content-Type": "application/x-www-form-urlencoded",
+}
 
-def test_login():
+LOGIN_PARAMS = [
+    (None, 422),
+    ("grant_type=&username=admin&password=admin&scope=&client_id=&client_secret=", 200),
+    (
+        "grant_type=&username=mcdoesntexist&password=admin&scope=&client_id=&client_secret=",
+        404,
+    ),
+    ("grant_type=&username=admin&password=wrong&scope=&client_id=&client_secret=", 404),
+]
+
+
+@pytest.mark.parametrize("data,expected_response", LOGIN_PARAMS)
+def test_login(data, expected_response):
     """[summary]"""
-    response = client.post(
-        "/login",
-        headers={
-            "accept": "application/json",
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-    )
-    assert response.status_code == 422
-    response = client.post(
-        "/login",
-        headers={
-            "accept": "application/json",
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        data="grant_type=&username=admin&password=admin&scope=&client_id=&client_secret=",
-    )
-    assert response.status_code == 200
+    response = client.post("/login", headers=HEADER, data=data)
+    assert response.status_code == expected_response
 
 
 bearer_token = client.post(
     "/login",
-    headers={
-        "accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers=HEADER,
     data="grant_type=&username=admin&password=admin&scope=&client_id=&client_secret=",
 )
 bearer_token = bearer_token.json()
@@ -59,18 +57,25 @@ def test_get_all():
     assert response.status_code == 200
 
 
-def test_params():
-    response = client.get("test_table/?limit=100&primarykey=0", headers=header)
-    assert response.status_code == 200
-    response = client.get("test_table/?limit=100&invalidparam=0", headers=header)
-    assert response.status_code == 400
+PARAMS = [
+    ("test_table/?limit=100&primarykey=0", 200),
+    ("test_table/?limit=100&invalidparam=0", 400),
+]
 
 
-def test_get_id():
-    response = client.get("test_table/0", headers=header)
-    assert response.status_code == 200
-    response = client.get("test_table/1", headers=header)
-    assert response.status_code == 404
+@pytest.mark.parametrize("url,expected_response", PARAMS)
+def test_params(url, expected_response):
+    response = client.get(url, headers=header)
+    assert response.status_code == expected_response
+
+
+GET_IDS = [("test_table/0", 200), ("test_table/1", 404)]
+
+
+@pytest.mark.parametrize("url,expected_response", GET_IDS)
+def test_get_id(url, expected_response):
+    response = client.get(url, headers=header)
+    assert response.status_code == expected_response
 
 
 def test_post():
@@ -82,16 +87,26 @@ def test_post():
     assert response.status_code == 200
 
 
-def test_put():
+UPDATES = [("test_table/2", 200), ("test_table/9000", 404)]
+
+
+@pytest.mark.parametrize("url,expected_response", UPDATES)
+def test_put(url, expected_response):
     data = {"primarykey": 2, "someothercoll": "someother"}
-    response = client.put("test_table/2", headers=header, json=data)
-    assert response.status_code == 200
-    response = client.get("test_table/2", headers=header)
-    assert response.json()["someothercoll"] == "someother"
+    response = client.put(url, headers=header, json=data)
+    assert response.status_code == expected_response
+    if expected_response == 200:
+        response = client.get(url, headers=header)
+        assert response.json()["someothercoll"] == "someother"
 
 
-def test_delete():
-    response = client.delete("test_table/2", headers=header)
-    assert response.status_code == 200
-    response = client.get("test_table/2", headers=header)
-    assert response.status_code == 404
+DELETES = [("test_table/2", 200), ("test_table/9000", 404)]
+
+
+@pytest.mark.parametrize("url,expected_response", DELETES)
+def test_delete(url, expected_response):
+    response = client.delete(url, headers=header)
+    assert response.status_code == expected_response
+    if expected_response == 200:
+        response = client.get(url, headers=header)
+        assert response.status_code == 404
