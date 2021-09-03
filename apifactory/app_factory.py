@@ -4,6 +4,10 @@
 from json import load as jsonload
 from yaml import load, Loader
 from fastapi import FastAPI
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 
 from apifactory.route_factory import Routers
 from apifactory.security import Security
@@ -44,6 +48,7 @@ class ApiFactory:
             self.security.get_current_user,
             userschema,
         )
+        self.config = config
 
     def app_factory(self):
         """[summary]
@@ -53,7 +58,17 @@ class ApiFactory:
         [type]
             [description]
         """
+
         app = FastAPI()
+        rate_limit = self.config.get("ratelimit")
+        limiter = Limiter(
+            key_func=get_remote_address,
+            application_limits=[rate_limit],
+            enabled=bool(rate_limit),
+        )
+        app.state.limiter = limiter
+        app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
         app = add_routes(self.routers, app)
         app.include_router(self.security.login)
         return app
