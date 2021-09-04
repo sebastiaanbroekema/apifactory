@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 
 from apifactory.route_factory import Routers
@@ -36,16 +37,19 @@ class ApiFactory:
             engine_kwargs=kwargs.get("engine_kwargs", None),
             views=config.get("views", None),
         )
-        rate_limit = config.get("ratelimit")
+        rate_limit = kwargs.get("ratelimit")
+
         self.limiter = Limiter(
             key_func=get_remote_address,
-            application_limits=[rate_limit],
+            default_limits=[rate_limit],
             enabled=bool(rate_limit),
         )
+
         self.schemas = schemas(self.db.models)
         usermodel = getattr(self.db.models, usermodel_name)
         userschema = getattr(self.schemas, usermodel_name)
         self.security = security(usermodel, self.db.get_db, jwt_key)
+
         self.routers = routers(
             self.db.models,
             self.schemas,
@@ -69,7 +73,7 @@ class ApiFactory:
 
         app.state.limiter = self.limiter
         app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
+        app.add_middleware(SlowAPIMiddleware)
         app = add_routes(self.routers, app)
         app.include_router(self.security.login)
         return app
