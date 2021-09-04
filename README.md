@@ -53,10 +53,6 @@ Apifactory is currently heavily under development and not feature compl
 Features to be included in the future:
 * More configuration options
 * Multicolumn primary key support
-* Support for views 
 * Add scopes to JWT
-* Configure from files YAML/JSON
-* Add support for custom classes inserted into ApiFactory
 * Make apifactory completely asynchronous
 * docs
-* ratelimitting
