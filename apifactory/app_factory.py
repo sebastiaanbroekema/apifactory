@@ -36,6 +36,12 @@ class ApiFactory:
             engine_kwargs=kwargs.get("engine_kwargs", None),
             views=config.get("views", None),
         )
+        rate_limit = config.get("ratelimit")
+        self.limiter = Limiter(
+            key_func=get_remote_address,
+            application_limits=[rate_limit],
+            enabled=bool(rate_limit),
+        )
         self.schemas = schemas(self.db.models)
         usermodel = getattr(self.db.models, usermodel_name)
         userschema = getattr(self.schemas, usermodel_name)
@@ -60,13 +66,8 @@ class ApiFactory:
         """
 
         app = FastAPI()
-        rate_limit = self.config.get("ratelimit")
-        limiter = Limiter(
-            key_func=get_remote_address,
-            application_limits=[rate_limit],
-            enabled=bool(rate_limit),
-        )
-        app.state.limiter = limiter
+
+        app.state.limiter = self.limiter
         app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
         app = add_routes(self.routers, app)
