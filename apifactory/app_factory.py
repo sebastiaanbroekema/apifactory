@@ -20,14 +20,14 @@ from apifactory.schemas import Schemas
 
 
 class ApiFactory:
+    # pylint: disable=C0301
     """Factory class for building a complete FastAPI app from configuration.
     Configuration can be provided by directly calling __init__ or by reading in json or yaml files.
 
 
     :param database_url: Connection string to the database containing the data.
     :type database_url: str
-    :param usermodel_name: Name of the database table that contains the information
-    about users for the api.
+    :param usermodel_name: Name of the database table that contains the information about users for the api.
     :type usermodel_name: str
     :param jwt_key: Key to use for hashing of the jwt. required for security purposes.
     :type jwt_key: str
@@ -37,16 +37,15 @@ class ApiFactory:
     :type database: Database, optional
     :param schemas: Class handeling the pydantic schemas, defaults to Schemas
     :type schemas: Schemas, optional
-    :param security: Security class handeling authentication and encryption/decryption of the JWT,
-     defaults to Security
+    :param security: Security class handeling authentication and encryption/decryption of the JWT, defaults to Security
     :type security: Security, optional
-    :param routers: Class for building the router objects used for
-    creating the routes in the application, defaults to Routers
+    :param routers: Class for building the router objects used for creating the routes in the application, defaults to Routers
     :type routers: Routers, optional
 
 
     >>> app = ApiFactory().app_factory()
     """
+    # pylint: enable=C0301
 
     def __init__(
         self,
@@ -112,8 +111,6 @@ class ApiFactory:
         app = add_routes(self.routers, app)
         app.include_router(self.security.login)
         return app
-
-        # open_api = app.openapi()
 
     @classmethod
     def from_yaml(
