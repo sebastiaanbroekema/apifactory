@@ -89,13 +89,13 @@ class ApiFactory:
         self.config = config
 
     def app_factory(self) -> FastAPI:
+        # pylint: disable=C0301
         """Method for creating the FastAPI app.
         Automatically adds a rate limiter to the app.
         Ratelimitter will be inactive if configuration does not specify a ratelimit.
 
 
-        :return: Generated FastAPI object with all the routes added.
-        ready to be used in uvicorn or your asgi application of choice.
+        :return: Generated FastAPI object with all the routes added. ready to be used in uvicorn or your asgi application of choice.
         :rtype: FastAPI
 
         >>> somevalid_config = {}
@@ -119,15 +119,15 @@ class ApiFactory:
         encoding: str = "utf8",
         **kwargs,
     ):
+        # pylint: disable=C0301
         """Method to instantiate ApiFacotry from a yaml file.
-        Offers support for kwargs
+        Offers support for kwargs directly passed to the __init__ function.
 
         :param yaml_file: Path to yaml file containing valid configuration for ApiFactory
         :type yaml_file: str
         :param encoding: Type of file encoding, defaults to 'utf8'
         :type encoding: str, optional
-        :return: Instantiated ApiFactory object with the configuration
-        provided by yaml file and kwargs
+        :return: Instantiated ApiFactory object with the configuration provided by yaml file and kwargs
         :rtype: ApiFactory
 
         >>> app = ApiFactory.from_yaml(yaml_file)
@@ -152,14 +152,15 @@ class ApiFactory:
 
     @classmethod
     def from_json(cls, json_file: str, encoding: str = "utf8", **kwargs):
-        """[summary]
+        # pylint: disable=C0301
+        """Method to instantiate ApiFacotry from a json file.
+        Offers support for kwargs directly passed to the __init__ function.
 
         :param json_file: Path to json file containing valid configuration for ApiFactory.
         :type json_file: str
         :param encoding: Type of file encoding, defaults to 'utf8'
         :type encoding: str, optional
-        :return: Instantiated ApiFactory object with the
-        configuration provided by yaml file and kwargs
+        :return: Instantiated ApiFactory object with the configuration provided by yaml file and kwargs
         :rtype: ApiFactory
 
 
