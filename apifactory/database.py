@@ -64,20 +64,17 @@ def add_to_metadata(
 
 
 class Database:
+    # pylint: disable=C0301
     """setup database connection, automatically detect
     all eligable tables in the connected database.
 
     :param database_url: Database connection string.
     :type database_url: str
-    :param engine_kwargs: Dictionary containing configuration for the database engine,
-    defaults to None
+    :param engine_kwargs: Dictionary containing configuration for the database engine, defaults to None
     :type engine_kwargs: Optional[dict], optional
-    :param local_session_kwargs: Arguments to be applied to sql session maker.
-    If no session arguments are defined autocommit and autoflush are turned off, defaults to None
+    :param local_session_kwargs: Arguments to be applied to sql session maker. If no session arguments are defined autocommit and autoflush are turned off, defaults to None
     :type local_session_kwargs: Optional[dict], optional
-    :param views: Dictionary containing view name (key)
-    and list of primarykey name datatype pairs.
-    Only views defined in this dictionary will be added to the api, defaults to None
+    :param views: Dictionary containing view name (key) and list of primarykey name datatype pairs. Only views defined in this dictionary will be added to the api, defaults to None
     :type views: Optional[dict], optional
 
     basic use only add a database connection string
