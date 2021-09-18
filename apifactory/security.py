@@ -137,14 +137,34 @@ class Security:
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=login_route)
         self.get_current_user = self.current_user_factory()
 
-    def create_access_token(self, data: dict):
+    def create_access_token(self, data: dict) -> str:
+        """function for creating the encoded access token.
+        Adds the required data to the token then uses the secret key to
+        encode the data into a jwt.
+
+        :param data: Dictionary containing the data for the jwt.
+        :type data: dict
+        :return: encrypted jwt.
+        :rtype: str
+        """
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
 
-    def verify_token(self, token: str, credentials_exception):
+    def verify_token(self, token: str, credentials_exception: Exception):
+        # pylint: disable=C0301
+        """Function for checking the validity of jwt tokens.
+        Checks if the required fields are present and if the JWT can be recreated.
+
+        :param token: JWT token provided by the endpoint user.
+        :type token: str
+        :param credentials_exception: Exception to raise when faced with invalid credentials.
+        :type credentials_exception: Exception
+        :raises credentials_exception: The provided token is invalid and the user is not granted acces to the endpoint.
+        """
+        # pylint: enable=C0301
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             email: str = payload.get("sub")
