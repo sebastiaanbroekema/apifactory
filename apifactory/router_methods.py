@@ -4,7 +4,7 @@
 # pylint: disable=E1101
 # pylint: disable=W0613
 # pylint: disable=C0301
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Union
 
 from fastapi import Depends, Query, Request
 from sqlalchemy.orm import Session
@@ -16,6 +16,7 @@ from apifactory.utils import (
     not_found,
     param_invalid,
     primary_key_checker,
+    inserter,
 )
 
 
@@ -187,7 +188,7 @@ def post_creator(
     method_kwargs: dict,
     excluded_columns: Optional[List] = None,
 ) -> Callable:
-    """Creates a post endpoint for single entries into the database.
+    """Creates a post endpoint for single or multiple entries into the database.
 
 
     :param method: FastAPI Router method to decorate the endpoint function with.
@@ -212,17 +213,18 @@ def post_creator(
 
     @method("/", **method_kwargs)
     def post(
-        request: schema,
+        request: Union[List[schema], schema],
         db: Session = Depends(get_db),
         current_user: user_schema = Depends(get_current_user),
     ):
         # schema = model_with_optional_fields(schema)
         original_request = request
-        request = request.dict()
-        if excluded_columns:
-            request = exclude_columns(request, excluded_columns)
-        db.add(model(**request))
-        db.commit()
+        # if isinstance(request,list):
+        #     insert_many(request,excluded_columns,db,model)
+        # else:
+        #     insert_single(request,excluded_columns,db,model)
+        inserter(request, excluded_columns, db, model)
+
         return original_request
 
     return post
