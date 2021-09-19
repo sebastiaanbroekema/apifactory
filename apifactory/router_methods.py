@@ -9,7 +9,7 @@ from typing import Any, Callable, List, Optional, Union
 from fastapi import Depends, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import Table
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from apifactory.utils import (
     exclude_columns,
@@ -239,6 +239,61 @@ def delete_creator(
     method_kwargs: dict,
     primary_key_type: Any = int,
 ) -> Callable:
+    """Creates an endpoint to delete a multiple entries by request data.
+
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :param primary_key_type: Type of the primary key to use in endpoint, defaults to int
+    :type primary_key_type: Any, optional
+    :return: Endpoint function.
+    :rtype: Callable
+    """
+
+    key_name, column = primary_key_checker(model)
+
+    class PrimaryKeyHolder(BaseModel):
+        primary_key: primary_key_type = Field(alias=str(key_name))
+
+    PrimaryKeyHolder.__name__ = f"Keyholder{model.__name__}"
+    # PrimaryKeyHolder.__dict__[key_name] = PrimaryKeyHolder.__dict__.pop('primary_key')
+
+    # PrimaryKeyHolder = create_model('PrimaryKeyHolder', key_name=primary_key_type)
+    # namedtuple('PrimaryKeyHolder',[str(key_name)])
+
+    @method("/", **method_kwargs)
+    def delete_many(
+        request: List[PrimaryKeyHolder],
+        db: Session = Depends(get_db),
+        current_user: user_schema = Depends(get_current_user),
+    ):
+        key_list = [pk.dict()["primary_key"] for pk in request]
+        db_items = db.query(model).filter(column.in_(key_list))
+        db_items.delete(synchronize_session=False)
+        db.commit()
+        return "records deleted"
+
+    return delete_many
+
+
+def delete_creator_id(
+    method: Callable,
+    model: Table,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
+    method_kwargs: dict,
+    primary_key_type: Any = int,
+) -> Callable:
     """Creates an endpoint to delete a single entry by primary key.
 
     :param method: FastAPI Router method to decorate the endpoint function with.
@@ -272,6 +327,6 @@ def delete_creator(
             not_found(model, key_name, key)
         db_item.delete(synchronize_session=False)
         db.commit()
-        return f"recored with primary key: {key} deleted"
+        return f"record with primary key: {key} deleted"
 
     return delete
