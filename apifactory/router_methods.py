@@ -265,10 +265,6 @@ def delete_creator(
         primary_key: primary_key_type = Field(alias=str(key_name))
 
     PrimaryKeyHolder.__name__ = f"Keyholder{model.__name__}"
-    # PrimaryKeyHolder.__dict__[key_name] = PrimaryKeyHolder.__dict__.pop('primary_key')
-
-    # PrimaryKeyHolder = create_model('PrimaryKeyHolder', key_name=primary_key_type)
-    # namedtuple('PrimaryKeyHolder',[str(key_name)])
 
     @method("/", **method_kwargs)
     def delete_many(
