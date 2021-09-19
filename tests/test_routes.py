@@ -87,6 +87,21 @@ def test_post():
     assert response.status_code == 200
 
 
+def test_bulk_post():
+    """test bulk insert"""
+    data = [
+        {"primarykey": 3, "someothercoll": "test"},
+        {"primarykey": 4, "someothercoll": "test"},
+    ]
+    response = client.post("test_table/", headers=header, json=data)
+    assert response.status_code == 200
+    # check if inserted in db
+    response = client.get("test_table/3", headers=header)
+    assert response.status_code == 200
+    response = client.get("test_table/4", headers=header)
+    assert response.status_code == 200
+
+
 UPDATES = [("test_table/2", 200), ("test_table/9000", 404)]
 
 
