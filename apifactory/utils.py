@@ -152,7 +152,8 @@ def inserter(request: list, excluded_columns: list, db: Callable, model: Table):
 
 
 @inserter.register
-def _(request: BaseModel, excluded_columns: list, db: callable, model: Table):
+def skipme(request: BaseModel, excluded_columns: list, db: callable, model: Table):
+    # :meta hide-function:
     request = request.dict()
     if excluded_columns:
         request = exclude_columns(request, excluded_columns)
