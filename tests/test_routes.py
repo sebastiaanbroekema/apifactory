@@ -125,3 +125,12 @@ def test_delete(url, expected_response):
     if expected_response == 200:
         response = client.get(url, headers=header)
         assert response.status_code == 404
+
+
+DELETE = [("test_table/", [{"primarykey": 3}, {"primarykey": 4}], 200)]
+
+
+@pytest.mark.parametrize("url,data,expected_response", DELETE)
+def test_delete_multiple(url, data, expected_response):
+    response = client.delete(url, json=data, headers=header)
+    assert response.status_code == expected_response
