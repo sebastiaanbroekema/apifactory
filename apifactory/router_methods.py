@@ -239,7 +239,7 @@ def delete_creator(
     method_kwargs: dict,
     primary_key_type: Any = int,
 ) -> Callable:
-    """Creates an endpoint to delete a multiple entries by request data.
+    """Creates an endpoint to delete multiple entries by request data.
 
     :param method: FastAPI Router method to decorate the endpoint function with.
     :type method: Callable
