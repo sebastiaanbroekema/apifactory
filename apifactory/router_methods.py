@@ -1,12 +1,15 @@
-"""module containing all router methods that are predefined
+"""module containing all create route methods that are predefined.
 """
 
 # pylint: disable=E1101
 # pylint: disable=W0613
-from typing import Any, Callable, List, Optional, Type
+# pylint: disable=C0301
+from typing import Any, Callable, List, Optional
 
 from fastapi import Depends, Query, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import Table
+from pydantic import BaseModel
 
 from apifactory.utils import (
     exclude_columns,
@@ -18,28 +21,32 @@ from apifactory.utils import (
 
 def getall_creator(
     method: Callable,
-    model: Type,
-    schema: Type,
-    get_db,
-    get_current_user,
-    user_schema,
+    model: Table,
+    schema: BaseModel,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
     method_kwargs: dict,
-):
-    """[summary]
+) -> Callable:
+    """Function for creating a get endpoint that retrives all entries.
 
-    Parameters
-    ----------
-    method : Callable
-        [description]
-    model : Type
-        [description]
-    schema : Type
-        [description]
 
-    Returns
-    -------
-    [type]
-        [description]
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param schema: Pydantic schema describing input/output for the endpoints.
+    :type schema: BaseModel
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :return: Endpoint function.
+    :rtype: Callable
     """
     #  operation_id set for custom name instead of route in openapi
     @method("/", response_model=List[schema], **method_kwargs)
@@ -64,31 +71,36 @@ def getall_creator(
 
 def get_id_creator(
     method: Callable,
-    model: Type,
-    schema: Type,
-    get_db,
-    get_current_user,
-    user_schema,
+    model: Table,
+    schema: BaseModel,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
     method_kwargs: dict,
     primary_key_type: Any = int,
-):
-    """[summary]
+) -> Callable:
+    """Generate an get endpoint to retrive elements by primarykey value.
 
-    Parameters
-    ----------
-    method : Callable
-        [description]
-    model : Type
-        [description]
-    schema : Type
-        [description]
-    primary_key_type : Any, optional
-        [description], by default int
 
-    Returns
-    -------
-    [type]
-        [description]
+
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param schema: Pydantic schema describing input/output for the endpoints.
+    :type schema: BaseModel
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :param primary_key_type: Type of the primary key to use in endpoint, defaults to int
+    :type primary_key_type: Any, optional
+    :return: Endpoint function.
+    :rtype: Callable
     """
     key_name, column = primary_key_checker(model)
 
@@ -108,34 +120,37 @@ def get_id_creator(
 
 def put_creator(
     method: Callable,
-    model: Type,
-    schema: Type,
-    get_db,
-    get_current_user,
-    user_schema,
+    model: Table,
+    schema: BaseModel,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
     method_kwargs: dict,
     primary_key_type: Any = int,
     excluded_columns: Optional[List] = None,
-):
-    """[summary]
+) -> Callable:
+    """Creates put endpoint for updating single entries in the database.
 
-    [extended_summary]
-
-    Parameters
-    ----------
-    method : Callable
-        [description]
-    model : Type
-        [description]
-    schema : Type
-        [description]
-    primary_key_type : Any, optional
-        [description], by default int
-
-    Returns
-    -------
-    [type]
-        [description]
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param schema: Pydantic schema describing input/output for the endpoints.
+    :type schema: BaseModel
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :param primary_key_type: Type of the primary key to use in endpoint, defaults to int
+    :type primary_key_type: Any, optional
+    :param excluded_columns: List contaning columns to exclude from the put request. For example primary key should not be updated, defaults to None
+    :type excluded_columns: Optional[List], optional
+    :return: Endpoint function.
+    :rtype: Callable
     """
 
     key_name, column = primary_key_checker(model)
@@ -164,31 +179,35 @@ def put_creator(
 
 def post_creator(
     method: Callable,
-    model: Type,
-    schema: Type,
-    get_db,
-    get_current_user,
-    user_schema,
+    model: Table,
+    schema: BaseModel,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
     method_kwargs: dict,
-    excluded_columns: Optional[list] = None,
-):
-    """[summary]
+    excluded_columns: Optional[List] = None,
+) -> Callable:
+    """Creates a post endpoint for single entries into the database.
 
-    Parameters
-    ----------
-    method : Callable
-        [description]
-    model : Type
-        [description]
-    schema : Type
-        [description]
-    excluded_columns : Optional[list], optional
-        [description], by default None
 
-    Returns
-    -------
-    [type]
-        [description]
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param schema: Pydantic schema describing input/output for the endpoints.
+    :type schema: BaseModel
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :param excluded_columns: List contaning columns to exclude from the put request. For example primary key should not be updated, defaults to None
+    :type excluded_columns: Optional[List], optional
+    :return: Endpoint function.
+    :rtype: Callable
     """
 
     @method("/", **method_kwargs)
@@ -211,28 +230,31 @@ def post_creator(
 
 def delete_creator(
     method: Callable,
-    model: Type,
-    get_db,
-    get_current_user,
-    user_schema,
+    model: Table,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
     method_kwargs: dict,
     primary_key_type: Any = int,
-):
-    """[summary]
+) -> Callable:
+    """Creates an endpoint to delete a single entry by primary key.
 
-    Parameters
-    ----------
-    method : Callable
-        [description]
-    model : Type
-        [description]
-    primary_key_type : Any, optional
-        [description], by default int
-
-    Returns
-    -------
-    [type]
-        [description]
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :param primary_key_type: Type of the primary key to use in endpoint, defaults to int
+    :type primary_key_type: Any, optional
+    :return: Endpoint function.
+    :rtype: Callable
     """
 
     key_name, column = primary_key_checker(model)

@@ -16,7 +16,7 @@ Apifactory automatically prevents unauthorized access. Users of your API
 
 ## A short example how to set up an API
 
-Apifactory will add all tables with a single column primary key. All columns of these table will be added to the schema of your API. However, this might not be preferred for all methods. For example, you might not want your post requests to also dictate the primary key the entry. This could for example be handled by the database itself. Currently, you can add some config to dictate which columns to exclude in post and put requests.In addition, you need to specify the database connection string. And specify the name of the table containing hashed passwords for user authentication.
+Apifactory will add all tables with a single column primary key. All columns of these table will be added to the schema of your API. However, this might not be preferred for all methods. For example, you might not want your post requests to also dictate the primary key the entry. This could for example be handled by the database itself. Currently, you can add some config to dictate which columns to exclude in post and put requests. In addition, you need to specify the database connection string. And specify the name of the table containing hashed passwords for user authentication.
 
 
 ```python
@@ -46,7 +46,7 @@ Since apifactory uses fastapi you automatically can visit an openapi p
 
 ![](Swagger_UI.png)
 
-
+Documentation is available [here](https://apifactory.readthedocs.io/en/latest/index.html).
 
 
 Apifactory is currently heavily under development and not feature complete/stable. 
@@ -55,4 +55,5 @@ Features to be included in the future:
 * Multicolumn primary key support
 * Add scopes to JWT
 * Make apifactory completely asynchronous
-* docs
+* Add support for custom models
+* Bulk endpoints
