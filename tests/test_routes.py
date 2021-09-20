@@ -123,7 +123,14 @@ UPDATES = [
             {"primarykey": 3, "someothercoll": "someother"},
         ],
         200,
-    )
+    ),
+    (
+        ["test_table/6"],
+        [
+            {"primarykey": 6, "someothercoll": "someother"},
+        ],
+        200,
+    ),
 ]
 
 
@@ -149,7 +156,9 @@ def test_delete(url, expected_response):
         assert response.status_code == 404
 
 
-DELETE = [("test_table/", [{"primarykey": 3}, {"primarykey": 4}], 200)]
+DELETE = [
+    ("test_table/", [{"primarykey": 3}, {"primarykey": 4}, {"primarykey": 6}], 200)
+]
 
 
 @pytest.mark.parametrize("url,data,expected_response", DELETE)
