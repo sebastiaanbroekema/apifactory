@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from apifactory.router_methods import (
     get_id_creator,
     getall_creator,
+    put_creator_many,
     put_creator,
     post_creator,
     delete_creator,
@@ -180,6 +181,17 @@ class Routers:
         )
         if is_view:
             return router
+
+        put_creator_many(
+            router_routes["put"],
+            model,
+            schema_opt,
+            excluded_columns=modelconfig.get("excluded_columns_put", None),
+            get_db=get_db,
+            method_kwargs=modelconfig.get("put_kwargs", {}),
+            get_current_user=get_current_user,
+            user_schema=user_schema,
+        )
         put_creator(
             router_routes["put"],
             model,
