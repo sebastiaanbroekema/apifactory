@@ -129,7 +129,8 @@ def put_creator_many(
     method_kwargs: dict,
     excluded_columns: Optional[List] = None,
 ) -> Callable:
-    """Creates put endpoint for updating single entries in the database.
+    """Creates put endpoint for updating multiple entries in the database.
+    Behaviour for any keys not present in the database is inserting them into the database.
 
     :param method: FastAPI Router method to decorate the endpoint function with.
     :type method: Callable
@@ -167,6 +168,10 @@ def put_creator_many(
             db_item = db.query(model).filter(column == primary_key)
             if excluded_columns:
                 content = exclude_columns(content, excluded_columns)
+            if not db_item.first():
+                content[primary_key_col] = primary_key
+                db.add(model(**content))
+            else:
                 db_item.update(content)
         db.commit()
         return "updated"
