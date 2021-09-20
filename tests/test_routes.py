@@ -115,6 +115,28 @@ def test_put(url, expected_response):
         assert response.json()["someothercoll"] == "someother"
 
 
+UPDATES = [
+    (
+        ["test_table/2", "test_table/3"],
+        [
+            {"primarykey": 2, "someothercoll": "someother"},
+            {"primarykey": 3, "someothercoll": "someother"},
+        ],
+        200,
+    )
+]
+
+
+@pytest.mark.parametrize("urls,data,expected_response", UPDATES)
+def test_put_many(urls, data, expected_response):
+    response = client.put("test_table/", headers=header, json=data)
+    assert response.status_code == expected_response
+    if expected_response == 200:
+        for url in urls:
+            response = client.get(url, headers=header)
+            assert response.json()["someothercoll"] == "someother"
+
+
 DELETES = [("test_table/2", 200), ("test_table/9000", 404)]
 
 
