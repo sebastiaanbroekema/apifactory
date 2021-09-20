@@ -119,6 +119,61 @@ def get_id_creator(
     return get_id
 
 
+def put_creator_many(
+    method: Callable,
+    model: Table,
+    schema: BaseModel,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
+    method_kwargs: dict,
+    excluded_columns: Optional[List] = None,
+) -> Callable:
+    """Creates put endpoint for updating single entries in the database.
+
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param schema: Pydantic schema describing input/output for the endpoints.
+    :type schema: BaseModel
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :param excluded_columns: List contaning columns to exclude from the put request. For example primary key should not be updated, defaults to None
+    :type excluded_columns: Optional[List], optional
+    :return: Endpoint function.
+    :rtype: Callable
+    """
+
+    primary_key_col, column = primary_key_checker(model)
+    # schema = model_with_optional_fields(schema)
+
+    @method("/", **method_kwargs)
+    async def update_many(
+        request: List[schema],
+        db: Session = Depends(get_db),
+        current_user: user_schema = Depends(get_current_user),
+    ):
+
+        key_list = {pk.dict()[primary_key_col]: pk.dict() for pk in request}
+
+        for primary_key, content in key_list.items():
+            db_item = db.query(model).filter(column == primary_key)
+            if excluded_columns:
+                content = exclude_columns(content, excluded_columns)
+                db_item.update(content)
+        db.commit()
+        return "updated"
+
+    return update_many
+
+
 def put_creator(
     method: Callable,
     model: Table,
