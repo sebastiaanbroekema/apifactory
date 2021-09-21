@@ -2,7 +2,9 @@
 
 """
 # pylint: disable=E0611
-from typing import Type
+from typing import Type, Callable
+from functools import singledispatch
+
 from fastapi import HTTPException, status, FastAPI
 from pydantic import BaseModel
 from sqlalchemy import Table
@@ -126,3 +128,34 @@ def add_routes(routers, app: FastAPI) -> FastAPI:
     for router_name in routers.router_names:
         app.include_router(getattr(routers, router_name))
     return app
+
+
+@singledispatch
+def inserter(request: list, excluded_columns: list, db: Callable, model: Table):
+    """Inserter function. Singledispatched to accept multiple entries or a single one.
+
+    :param request: The request from the endpoint. Either a list or a single entry.
+    :type request: list|BaseModel
+    :param excluded_columns: List contaning columns to exclude from the db operation.
+    :type excluded_columns: list
+    :param db: Function to acquire a database session
+    :type db: Callable
+    :param model: SQLalchemy model for the database operation.
+    :type model: Table
+    """
+    for content in request:
+        content = content.dict()
+        if excluded_columns:
+            content = exclude_columns(content, excluded_columns)
+        db.add(model(**content))
+    db.commit()
+
+
+@inserter.register
+def skipme(request: BaseModel, excluded_columns: list, db: callable, model: Table):
+    # :meta hide-function:
+    request = request.dict()
+    if excluded_columns:
+        request = exclude_columns(request, excluded_columns)
+    db.add(model(**request))
+    db.commit()

@@ -4,18 +4,19 @@
 # pylint: disable=E1101
 # pylint: disable=W0613
 # pylint: disable=C0301
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Union
 
 from fastapi import Depends, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import Table
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from apifactory.utils import (
     exclude_columns,
     not_found,
     param_invalid,
     primary_key_checker,
+    inserter,
 )
 
 
@@ -118,6 +119,66 @@ def get_id_creator(
     return get_id
 
 
+def put_creator_many(
+    method: Callable,
+    model: Table,
+    schema: BaseModel,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
+    method_kwargs: dict,
+    excluded_columns: Optional[List] = None,
+) -> Callable:
+    """Creates put endpoint for updating multiple entries in the database.
+    Behaviour for any keys not present in the database is inserting them into the database.
+
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param schema: Pydantic schema describing input/output for the endpoints.
+    :type schema: BaseModel
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :param excluded_columns: List contaning columns to exclude from the put request. For example primary key should not be updated, defaults to None
+    :type excluded_columns: Optional[List], optional
+    :return: Endpoint function.
+    :rtype: Callable
+    """
+
+    primary_key_col, column = primary_key_checker(model)
+    # schema = model_with_optional_fields(schema)
+
+    @method("/", **method_kwargs)
+    async def update_many(
+        request: List[schema],
+        db: Session = Depends(get_db),
+        current_user: user_schema = Depends(get_current_user),
+    ):
+
+        key_list = {pk.dict()[primary_key_col]: pk.dict() for pk in request}
+
+        for primary_key, content in key_list.items():
+            db_item = db.query(model).filter(column == primary_key)
+            if excluded_columns:
+                content = exclude_columns(content, excluded_columns)
+            if not db_item.first():
+                content[primary_key_col] = primary_key
+                db.add(model(**content))
+            else:
+                db_item.update(content)
+        db.commit()
+        return "updated"
+
+    return update_many
+
+
 def put_creator(
     method: Callable,
     model: Table,
@@ -187,7 +248,7 @@ def post_creator(
     method_kwargs: dict,
     excluded_columns: Optional[List] = None,
 ) -> Callable:
-    """Creates a post endpoint for single entries into the database.
+    """Creates a post endpoint for single or multiple entries into the database.
 
 
     :param method: FastAPI Router method to decorate the endpoint function with.
@@ -212,23 +273,75 @@ def post_creator(
 
     @method("/", **method_kwargs)
     def post(
-        request: schema,
+        request: Union[List[schema], schema],
         db: Session = Depends(get_db),
         current_user: user_schema = Depends(get_current_user),
     ):
         # schema = model_with_optional_fields(schema)
         original_request = request
-        request = request.dict()
-        if excluded_columns:
-            request = exclude_columns(request, excluded_columns)
-        db.add(model(**request))
-        db.commit()
+        # if isinstance(request,list):
+        #     insert_many(request,excluded_columns,db,model)
+        # else:
+        #     insert_single(request,excluded_columns,db,model)
+        inserter(request, excluded_columns, db, model)
+
         return original_request
 
     return post
 
 
 def delete_creator(
+    method: Callable,
+    model: Table,
+    get_db: Callable,
+    get_current_user: Callable,
+    user_schema: BaseModel,
+    method_kwargs: dict,
+    primary_key_type: Any = int,
+) -> Callable:
+    """Creates an endpoint to delete multiple entries by request data.
+
+    :param method: FastAPI Router method to decorate the endpoint function with.
+    :type method: Callable
+    :param model: SQLalchemy model for the table containing endpoint data.
+    :type model: Table
+    :param get_db: Function to acquire a database session.
+    :type get_db: Callable
+    :param get_current_user: Function to acquire and verify the current user.
+    :type get_current_user: Callable
+    :param user_schema: Pydantic schema describing user information.
+    :type user_schema: BaseModel
+    :param method_kwargs: Key word arguments to add to the router method.
+    :type method_kwargs: dict
+    :param primary_key_type: Type of the primary key to use in endpoint, defaults to int
+    :type primary_key_type: Any, optional
+    :return: Endpoint function.
+    :rtype: Callable
+    """
+
+    key_name, column = primary_key_checker(model)
+
+    class PrimaryKeyHolder(BaseModel):
+        primary_key: primary_key_type = Field(alias=str(key_name))
+
+    PrimaryKeyHolder.__name__ = f"Keyholder{model.__name__}"
+
+    @method("/", **method_kwargs)
+    def delete_many(
+        request: List[PrimaryKeyHolder],
+        db: Session = Depends(get_db),
+        current_user: user_schema = Depends(get_current_user),
+    ):
+        key_list = [pk.dict()["primary_key"] for pk in request]
+        db_items = db.query(model).filter(column.in_(key_list))
+        db_items.delete(synchronize_session=False)
+        db.commit()
+        return "records deleted"
+
+    return delete_many
+
+
+def delete_creator_id(
     method: Callable,
     model: Table,
     get_db: Callable,
@@ -270,6 +383,6 @@ def delete_creator(
             not_found(model, key_name, key)
         db_item.delete(synchronize_session=False)
         db.commit()
-        return f"recored with primary key: {key} deleted"
+        return f"record with primary key: {key} deleted"
 
     return delete

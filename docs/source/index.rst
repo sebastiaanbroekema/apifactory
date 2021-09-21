@@ -11,15 +11,7 @@ Welcome to apifactory's documentation!
    :caption: Contents:
 
    Installation
-   API reference
-   app_factory
-   database
-   route_factory
-   router_methods
-   schemas
-   security
-   utils
-
+   Whatisnew
 
 
 Indices and tables
