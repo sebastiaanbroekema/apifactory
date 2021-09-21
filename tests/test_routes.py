@@ -78,12 +78,29 @@ def test_get_id(url, expected_response):
     assert response.status_code == expected_response
 
 
-def test_post():
-    data = {"primarykey": 2, "someothercoll": "test"}
-    response = client.post("test_table/", headers=header, json=data)
+POST = [
+    ("test_table/", {"primarykey": 2, "someothercoll": "test"}, "test_table/2"),
+    (
+        # test the auto increment working properly and exclude columns
+        "Persons/",
+        {
+            "LastName": "string",
+            "FirstName": "string",
+            "Age": 0,
+            "createdDate": "2021-09-21T07:25:37.194Z",
+        },
+        "Persons/2",
+    ),
+]
+
+
+@pytest.mark.parametrize("url,data,geturl", POST)
+def test_post(url, data, geturl):
+    # data = {"primarykey": 2, "someothercoll": "test"}
+    response = client.post(url, headers=header, json=data)
     assert response.status_code == 200
     # check if inserted in db
-    response = client.get("test_table/2", headers=header)
+    response = client.get(geturl, headers=header)
     assert response.status_code == 200
 
 
@@ -144,7 +161,7 @@ def test_put_many(urls, data, expected_response):
             assert response.json()["someothercoll"] == "someother"
 
 
-DELETES = [("test_table/2", 200), ("test_table/9000", 404)]
+DELETES = [("test_table/2", 200), ("test_table/9000", 404), ("Persons/2", 200)]
 
 
 @pytest.mark.parametrize("url,expected_response", DELETES)
