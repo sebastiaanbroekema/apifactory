@@ -27,6 +27,7 @@ uvicorn= "0.*"
 python-multipart = "0.*"
 PyYAML = "5.*"
 slowapi = "^0.1.5"
+fastapi-pagination = "^0.8.3"
 
 [tool.poetry.dev-dependencies]
 black = "^21.5b2 "
