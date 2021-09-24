@@ -6,10 +6,13 @@
 # pylint: disable=C0301
 from typing import Any, Callable, List, Optional, Union
 
-from fastapi import Depends, Query, Request
+from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import Table
 from pydantic import BaseModel, Field
+
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 from apifactory.utils import (
     exclude_columns,
@@ -50,22 +53,26 @@ def getall_creator(
     :rtype: Callable
     """
     #  operation_id set for custom name instead of route in openapi
-    @method("/", response_model=List[schema], **method_kwargs)
+    #     @app.get("/users/default", response_model=Page[UserOut])
+    # @app.get("/users/limit-offset", response_model=LimitOffsetPage[UserOut])
+    _, pk_column = primary_key_checker(model)
+
+    @method("/", response_model=Page[schema], **method_kwargs)
+    # @method("/limit-offset", response_model=LimitOffsetPage[schema], **method_kwargs)
     def get_all(
         request: Request,
         db: Session = Depends(get_db),
-        limit: int = Query(100),
         current_user: user_schema = Depends(get_current_user),
     ):
         response = db.query(model)
         for param, value in request.query_params.items():
-            if param == "limit":
+            if param in ("offset", "limit", "limit-offset", "page", "size"):
                 continue
             if not hasattr(model, param):
                 param_invalid(model, param)
             column = getattr(model, param, None)
             response = response.filter(column == value)
-        return response.limit(limit).all()
+        return paginate(response.order_by(pk_column))
 
     return get_all
 
