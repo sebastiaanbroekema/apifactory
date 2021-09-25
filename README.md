@@ -56,4 +56,5 @@ Features to be included in the future:
 * Add scopes to JWT
 * Make apifactory completely asynchronous
 * Add support for custom models
-* Bulk endpoints
+* Custom endpoint
+* logging
