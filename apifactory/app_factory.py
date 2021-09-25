@@ -10,6 +10,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from fastapi_pagination import add_pagination
 
 
 from apifactory.route_factory import Routers
@@ -110,6 +111,7 @@ class ApiFactory:
         app.add_middleware(SlowAPIMiddleware)
         app = add_routes(self.routers, app)
         app.include_router(self.security.login)
+        app = add_pagination(app)
         return app
 
     @classmethod
