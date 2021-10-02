@@ -5,5 +5,5 @@ from apifactory.security import Hash
 
 def test_hash():
     hash_ = Hash()
-    encrypted = hash_.bcrypt("bla")
+    encrypted = hash_.hash("bla")
     assert hash_.verify("bla", encrypted) is True
