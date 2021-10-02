@@ -2,7 +2,7 @@
 Contains a class for hashing and a class handeling login and JWT handeling.
 """
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Tuple
 from collections.abc import Callable
 
 
@@ -42,23 +42,22 @@ class TokenData(BaseModel):
 class Hash:
     # pylint: disable=C0301
     """class for hashing of paswords contains option for having a salt as a seperate secret.
-    This class will be changed in the future. It will be made to be completly configurable.
-    This means the  bcrypt method will be depricated in the future.
 
 
-        :param schemes: Define which password hashing algorithm to use, defaults to ("bcrypt"), defaults to ("bcrypt")
-        :type schemes: tuple, optional
-        :param salt: Inaptly named version of a pepper. String that defines the pepper key to use in encription, defaults to None
-        :type salt: [type], optional
+
+    :param schemes: Define which password hashing algorithm to use, defaults to ("bcrypt"), defaults to ("bcrypt")
+    :type schemes: tuple, optional
+    :param salt: Inaptly named version of a pepper. String that defines the pepper key to use in encription, defaults to None
+    :type salt: [type], optional
 
 
-        Basic use is instanciating the Hash class. Afterwards input can be hashed and verified.
+    Basic use is instanciating the Hash class. Afterwards input can be hashed and verified.
 
 
-        >>> hasher = Hash()
-        >>> hash = hasher.bcrypt('somepassword')
-        >>> hasher.verify('somepassword', hash)
-        True
+    >>> hasher = Hash()
+    >>> hash = hasher.hash('somepassword')
+    >>> hasher.verify('somepassword', hash)
+    True
     """
     # pylint: enable=C0301
 
@@ -68,7 +67,7 @@ class Hash:
         self.salt = salt
         self.pwd_cxt = CryptContext(schemes=schemes, deprecated="auto")
 
-    def bcrypt(self, password: str) -> str:
+    def hash(self, password: str) -> str:
         """function to encrypt a password
 
         :param password: It's the password to encrypt.
@@ -76,9 +75,7 @@ class Hash:
         :return: Hashed password.
         :rtype: str
         """
-        DeprecationWarning(
-            "In version 0.5.0 and above bcrypt will move to a hashing method."
-        )
+
         return self.pwd_cxt.hash(f"{self.salt}{password}")
 
     def verify(self, plain_password: str, hashed_password: str) -> bool:
@@ -107,15 +104,30 @@ class Security:
     :type jwt_key: str
     :param algorithm: Algorithm to use for JWT encryption, defaults to "HS256"
     :type algorithm: str, optional
+    :param hash_class: Hashing class to use for hashing and verifying passwords.
+    :type hash_class: Hash, optional
     :param access_token_expire_minutes: Defines howlong a token is valid after issuing, defaults to 30
     :type access_token_expire_minutes: int, optional
     :param login_route: route you desire the login endpoint to be, defaults to "login"
     :type login_route: str, optional
     :param password_salt: If a password salt (actually a pepper) is to be provided, defaults to None
     :type password_salt: Optional[str], optional
+    :param hash_scheme: Scheme to use for pasword hashing.
+    :type hash_scheme: Tuple[str], optional
+
+    Basic use requires a Table containing the username/hashed passwords, method to aquire database session and a key to hash the json web token.
 
 
     >>> sec = Security(Table, get_db, jwt_key)
+
+    More advanced use can include altering which hashing class is passed to the security class.
+    This can be done to have a hashing class with different behavior.
+
+    >>> class NewHashing(Hash):
+    ...     "somehow different"
+    >>> sec = Security(Table, get_db, jwt_key, NewHashing)
+
+
     """
     # pylint: enable=C0301
     def __init__(
@@ -124,15 +136,17 @@ class Security:
         get_db: Callable,
         jwt_key: str,
         algorithm="HS256",
+        hash_class: Hash = Hash,
         access_token_expire_minutes: int = 30,
         login_route: str = "login",
         password_salt: Optional[str] = None,
+        hash_scheme: Tuple[str] = ("bcrypt"),
     ) -> None:
 
         self.secret_key = jwt_key
         self.algorithm = algorithm
         self.access_token_expire_minutes = access_token_expire_minutes
-        self.hash = Hash(salt=password_salt)
+        self.hash = hash_class(hash_scheme, salt=password_salt)
         self.login = self.login_router(usermodel=usermodel, get_db=get_db)
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=login_route)
         self.get_current_user = self.current_user_factory()
