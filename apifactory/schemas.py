@@ -1,13 +1,12 @@
 """ module for auto generating schema from SQL alchemy models.
 """
 # pylint: disable=E0611
-from typing import Container, Optional, Type
 
-from pydantic import BaseConfig, BaseModel, create_model
-from sqlalchemy.inspection import inspect
-from sqlalchemy.orm.properties import ColumnProperty
+from pydantic import BaseConfig
+
 import sqlalchemy.orm
 import sqlalchemy.sql.sqltypes
+from pydantic_sqlalchemy import sqlalchemy_to_pydantic
 
 from apifactory.database import Models
 
@@ -52,45 +51,5 @@ class Schemas:
             # pylint: disable=C0103
             table_name = str(table.__table__.name)
             # pylint: enable=C0103
-            schema = self.sqlalchemy_to_pydantic(table, config=OrmConfig)
+            schema = sqlalchemy_to_pydantic(table, config=OrmConfig)
             setattr(self, table_name, schema)
-
-    @staticmethod
-    def sqlalchemy_to_pydantic(
-        db_model: Type, *, config: Type = OrmConfig, exclude: Container[str] = ()
-    ) -> Type[BaseModel]:
-        """Helper function for converting sqlalchemy models to pydantic schema.
-
-        :param db_model: SqlAlchemy model.
-        :type db_model: Type
-        :param config: config class to pydantic create_model function, defaults to OrmConfig
-        :type config: Type, optional
-        :param exclude: which columns to exclude from the pydantic schema, defaults to ()
-        :type exclude: Container[str], optional
-        :return: The pydantic schema based on the SqlALchemy model.
-        :rtype: Type[BaseModel]
-        """
-        mapper = inspect(db_model)
-        fields = {}
-        for attr in mapper.attrs:
-            if isinstance(attr, ColumnProperty):
-                if attr.columns:
-                    name = attr.key
-                    if name in exclude:
-                        continue
-                    column = attr.columns[0]
-                    python_type: Optional[type] = None
-                    if hasattr(column.type, "impl"):
-                        if hasattr(column.type.impl, "python_type"):
-                            python_type = column.type.impl.python_type
-                    elif hasattr(column.type, "python_type"):
-                        python_type = column.type.python_type
-                    assert python_type, f"Could not infer python_type for {column}"
-                    default = None
-                    if column.default is None and not column.nullable:
-                        default = None
-                    fields[name] = (python_type, default)
-        pydantic_model = create_model(
-            db_model.__name__, __config__=config, **fields  # type: ignore
-        )
-        return pydantic_model
