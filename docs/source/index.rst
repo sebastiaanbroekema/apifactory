@@ -11,7 +11,9 @@ Welcome to apifactory's documentation!
    :caption: Contents:
 
    Installation
+   Configuration
    Whatisnew
+
 
 
 Indices and tables
