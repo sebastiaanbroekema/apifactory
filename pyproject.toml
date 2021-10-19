@@ -18,7 +18,6 @@ classifiers = [
 python = "~3.9"
 fastapi="0.*"
 python-jose="3.*"
-pymssql="2.*"
 bcrypt="3.*"
 passlib= "1.*"
 sqlalchemy="1.*"
@@ -29,6 +28,11 @@ PyYAML = "5.*"
 slowapi = "^0.1.5"
 fastapi-pagination = "^0.8.3"
 "pydantic-sqlalchemy"="0.*"
+
+pymssql = { version = "2.*", optional = true }
+
+[tool.poetry.extras]
+mssql = ["pymssql"]
 
 [tool.poetry.dev-dependencies]
 black = "^21.5b2 "
